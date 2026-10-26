@@ -1,0 +1,9 @@
+.DS_Store
+build/
+__pycache__/
+*.pyc
+.venv/
+case/out/*
+!case/out/tub.stl
+!case/out/lid.stl
+!case/out/fit_gauge.stl
