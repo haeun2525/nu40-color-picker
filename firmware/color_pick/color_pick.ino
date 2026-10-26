@@ -77,7 +77,7 @@ static void poll_serial() {
             if (ci > 0) {
                 cb[ci] = 0;
                 if (cb[0] == 'u') {                 // 'u' → UF2 부트로더로 (리셋버튼 없이 재굽기)
-                    Serial.println("[dfu] 부트로더 진입... NRF52BOOT 뜨면 UF2 복사");
+                    Serial.println("[dfu] Entering bootloader... copy the UF2 when NRF52BOOT appears");
                     Serial.flush(); delay(80);
                     NRF_POWER->GPREGRET = 0x57;      // DFU_MAGIC_UF2_RESET (Adafruit nRF52 부트로더)
                     NVIC_SystemReset();              // 여기서 재부팅 → 아래로 안 돌아옴
@@ -220,16 +220,16 @@ static int capture_jpeg() {
         if (find_image(resp, &p, &q)) {
             int b64len = (int)(q - p);
             int jpgLen = b64_decode(p, b64len, jpg, JPG_MAX);
-            if (Serial) { Serial.print("받은 "); Serial.print(total);
+            if (Serial) { Serial.print("got "); Serial.print(total);
                           Serial.print("B / base64 "); Serial.print(b64len);
                           Serial.print(" / jpeg "); Serial.print(jpgLen);
-                          Serial.print("B (시도 "); Serial.print(attempt + 1); Serial.println(")"); }
+                          Serial.print("B (try "); Serial.print(attempt + 1); Serial.println(")"); }
             return jpgLen;
         }
 
         /* 진단: 실패한 시도의 응답 앞부분(code 값 등 보려고) */
-        if (Serial) { Serial.print("[시도 "); Serial.print(attempt + 1);
-            Serial.print(" 실패] total="); Serial.print(total); Serial.print(" raw: ");
+        if (Serial) { Serial.print("[try "); Serial.print(attempt + 1);
+            Serial.print(" failed] total="); Serial.print(total); Serial.print(" raw: ");
             int h = total < 150 ? total : 150; char s = resp[h]; resp[h] = 0;
             Serial.println(resp); resp[h] = s; }
     }
@@ -280,8 +280,8 @@ void setup() {
     beat(4);                                   // 준비 끝
     if (Serial) {
         Serial.println();
-        Serial.println("== 05 color pick ==  카메라 중앙색 → #RRGGBB");
-        Serial.println("JPEGDEC 라이브러리 필요. 센서 빨강=3V3, SenseCraft 탭 닫기.");
+        Serial.println("== color pick ==  camera center color -> #RRGGBB");
+        Serial.println("Needs the JPEGDEC library. Sensor red wire = 3V3. Close any SenseCraft browser tab.");
         Serial.println();
     }
 }
@@ -328,15 +328,15 @@ void loop() {
             if (Serial) {
                 char hex[8]; snprintf(hex, sizeof(hex), "#%02X%02X%02X", R, G, B);
                 Serial.print("  raw("); Serial.print(rawR); Serial.print(","); Serial.print(rawG);
-                Serial.print(","); Serial.print(rawB); Serial.print(") → 보정 RGB(");
+                Serial.print(","); Serial.print(rawB); Serial.print(") -> corrected RGB(");
                 Serial.print(R); Serial.print(","); Serial.print(G); Serial.print(","); Serial.print(B);
                 Serial.print(")  "); Serial.println(hex);
             }
         } else if (Serial) {
-            Serial.println("  디코드는 됐는데 중앙 픽셀이 0 (half/좌표 확인).");
+            Serial.println("  Decoded, but the center pixels are 0 (check scale/coordinates).");
         }
     } else if (jpgLen > 0 && Serial) {
-        Serial.println("  JPEG 디코드 실패 (데이터 손상/크기 초과 가능).");
+        Serial.println("  JPEG decode failed (data damaged or too large).");
     }
 
     delay(1200);   // 이미지 전송이 느리므로 천천히 반복
